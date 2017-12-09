@@ -45,6 +45,7 @@ public class MainActivity_Family extends FragmentActivity implements
     private double latitude;
     private String currentUserId;
     private com.google.firebase.database.Query mQueryMF;
+    private TextView tt;
 
 
     //Our Map
@@ -67,6 +68,7 @@ public class MainActivity_Family extends FragmentActivity implements
 
         logout = (Button) findViewById(R.id.logout);
         buttonCurrent = (ImageButton) findViewById(R.id.buttonCurrent);
+        tt = (TextView) findViewById(R.id.tt);
 
 
         buttonCurrent.setOnClickListener(this);
@@ -83,16 +85,18 @@ public class MainActivity_Family extends FragmentActivity implements
     }
 
     private void getCurrentLocation() {
-        mQueryMF = mDatabase.child("users").child("familyId").equalTo(currentUserId);
+        mQueryMF = mDatabase.child("users").orderByChild("familyId").equalTo(currentUserId);
 
         mQueryMF.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                latitude = dataSnapshot.child("latitude").getValue(Double.class);
-                longitude = dataSnapshot.child("longitude").getValue(Double.class);
+                for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                    latitude = userSnapshot.child("latitude").getValue(Double.class);
+                    longitude = userSnapshot.child("longitude").getValue(Double.class);
+                }
                 //String to display current latitude and longitude
                 String msg = latitude + ", " + longitude;
-
+                tt.setText(msg);
                 //Creating a LatLng Object to store Coordinates
                 LatLng latLng = new LatLng(latitude, longitude);
                 //Adding marker to map
