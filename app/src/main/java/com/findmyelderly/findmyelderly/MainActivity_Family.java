@@ -1,9 +1,13 @@
 package com.findmyelderly.findmyelderly;
 
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -27,6 +31,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 
 public class MainActivity_Family extends FragmentActivity implements
         OnMapReadyCallback,
@@ -46,7 +54,9 @@ public class MainActivity_Family extends FragmentActivity implements
     private String currentUserId;
     private com.google.firebase.database.Query mQueryMF;
     private TextView tt;
-
+    //added by alan 11/12/2017
+    private String dateTime;
+    private String address;
 
     //Our Map
     private GoogleMap mMap;
@@ -84,6 +94,31 @@ public class MainActivity_Family extends FragmentActivity implements
 
     }
 
+    private String getCompleteAddressString(double LATITUDE, double LONGITUDE) {
+        String strAdd = "";
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(LATITUDE, LONGITUDE, 1);
+            if (addresses != null) {
+                Address returnedAddress = addresses.get(0);
+                StringBuilder strReturnedAddress = new StringBuilder("");
+
+                for (int i = 0; i <= returnedAddress.getMaxAddressLineIndex(); i++) {
+                    strReturnedAddress.append(returnedAddress.getAddressLine(i)).append("\n");
+                }
+                strAdd = strReturnedAddress.toString();
+                Log.w("", strReturnedAddress.toString());
+            } else {
+                Log.w("", "No Address returned!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.w("", "Canont get Address!");
+        }
+        return strAdd;
+    }
+
+
     private void getCurrentLocation() {
         mQueryMF = mDatabase.child("users").orderByChild("familyId").equalTo(currentUserId);
 
@@ -93,9 +128,15 @@ public class MainActivity_Family extends FragmentActivity implements
                 for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
                     latitude = userSnapshot.child("latitude").getValue(Double.class);
                     longitude = userSnapshot.child("longitude").getValue(Double.class);
+                    dateTime = userSnapshot.child("dateTime").getValue(String.class);
+                    address = getCompleteAddressString(latitude,longitude);
                 }
                 //String to display current latitude and longitude
-                String msg = latitude + ", " + longitude;
+                //DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                //dateTime = df.format(dateTime);
+
+                //String msg = latitude + ", " + longitude+ ", last updated: "+dateTime;
+                String msg = address+", last updated: "+dateTime;
                 tt.setText(msg);
                 //Creating a LatLng Object to store Coordinates
                 LatLng latLng = new LatLng(latitude, longitude);
@@ -109,7 +150,7 @@ public class MainActivity_Family extends FragmentActivity implements
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
                 //Animating the camera
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(20));
             }
 
             @Override

@@ -20,6 +20,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+//added by alan, 11/12/2017
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
+import java.text.DateFormat;
 
 
 
@@ -40,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private double longitude;
     private double latitude;
-
     private String userId = "";
+    //added by alan, 11/12/2017
+    private String dateTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,14 +132,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             latitude = location.getLatitude();
             mAuth = FirebaseAuth.getInstance();
             user = mAuth.getCurrentUser();
+            //added by alan, 11/12/2017
+            DateFormat dateTimeFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            //Calendar currentTime = Calendar.getInstance();
+            dateTime = dateTimeFormat.format(Calendar.getInstance().getTime());
+
+
             //save text in edittext into the firebase
-            if (!String.valueOf(latitude).equals(""))
+            if (!String.valueOf(latitude).equals("") || String.valueOf(latitude).equals(null))
                 mDatabase.child("users").child(user.getUid()).child("latitude").setValue(latitude);
             if (!String.valueOf(longitude).equals(""))
                 mDatabase.child("users").child(user.getUid()).child("longitude").setValue(longitude);
-
-
-
+            //added by alan, 11/12/2017
+            mDatabase.child("users").child(user.getUid()).child("dateTime").setValue(dateTime);
         }
     }
 
